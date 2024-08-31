@@ -14,26 +14,27 @@ const simpleLightbox = new SimpleLightbox('.js-gallery a', {
   captionsData: 'alt',
   overlayOpacity: 1,
 });
-let currentPage = 1; //номер групи при першому запиті
-let searchedValue = ''; // Зробили змінну глобальною, щоб використ у ф.кнопки завантажити ще
+let currentPage = 1; //номер групи при першому запиті, за замовчуванням
+let searchedValue = ''; // Зробили змінну глобальною,pf pfvjdx gecnbq hzljr щоб використ у ф.кнопки завантажити ще
 let quantityElements = 0;
 
 const onSearchFormSubmit = async event => {
-  event.preventDefault(); // Зупиняємо дію браузера за замовчуванням
-
-  searchedValue = searchFormEl.elements.user_query.value.trim(); // Зчитуємо значення пошукового запиту
-
-  // Якщо поле пусте, показуємо попередження
-  if (searchedValue === '') {
-    iziToast.warning({
-      message: 'Please enter a search query.',
-      position: 'bottomRight',
-    });
-    return;
-  }
-
   try {
+    event.preventDefault(); // Зупиняємо дію браузера за замовчуванням
+
+    searchedValue = searchFormEl.elements.user_query.value.trim(); // Зчитуємо значення пошукового запиту
+
+    // Якщо поле пусте, показуємо попередження
+    if (searchedValue === '') {
+      iziToast.warning({
+        message: 'Please enter a search query.',
+        position: 'bottomRight',
+      });
+      return;
+    }
+
     loaderEl.classList.remove('is-hidden'); // Показуємо лоадер
+    currentPage = 1;
     const response = await fetchPhotos(searchedValue, currentPage); // 1Запит до API, викликаємо ф-ію і передаємо в неї значення інпута та номер групи
     const data = response.data; // Отримуємо дані з відповіді
 
@@ -70,8 +71,8 @@ const onSearchFormSubmit = async event => {
 
 const onLoadMoreBtnClick = async event => {
   try {
-    currentPage++;
-    const response = await fetchPhotos(searchedValue, currentPage);
+    currentPage++; //збільш номер групи на одиницю при кожному кліку на кн
+    const response = await fetchPhotos(searchedValue, currentPage); // і робимо запит на сервер виклик ф fetchPhotos()
     const data = response.data; // Витягуємо дані з відповіді
 
     const galleryCardsTemplate = data.hits
