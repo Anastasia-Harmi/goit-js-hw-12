@@ -7,16 +7,20 @@ import SimpleLightbox from 'simplelightbox';
 const searchFormEl = document.querySelector('.js-search-form');
 const galleryEl = document.querySelector('.js-gallery');
 const loaderEl = document.querySelector('.loader');
+const loadMoreBtnEl = document.querySelector('.loader-btn'); //шукаємо кнопку завантажити ще
 const simpleLightbox = new SimpleLightbox('.js-gallery a', {
   captionDelay: 250,
   captionPosition: 'bottom',
   captionsData: 'alt',
   overlayOpacity: 1,
 });
+let currentPage = 1; //номер групи при першому запиті
+let searchedValue = ''; // Зробили змінну глобальною, щоб використ у ф.кнопки завантажити ще
 
 const onSearchFormSubmit = async event => {
-  event.preventDefault(); // Зупиняємо дію за замовчуванням
-  const searchedValue = searchFormEl.elements.user_query.value.trim(); // Зчитуємо значення пошукового запиту
+  event.preventDefault(); // Зупиняємо дію браузера за замовчуванням
+
+  searchedValue = searchFormEl.elements.user_query.value.trim(); // Зчитуємо значення пошукового запиту
 
   // Якщо поле пусте, показуємо попередження
   if (searchedValue === '') {
@@ -29,7 +33,7 @@ const onSearchFormSubmit = async event => {
 
   try {
     loaderEl.classList.remove('is-hidden'); // Показуємо лоадер
-    const response = await fetchPhotos(searchedValue, 1); // Запит до API
+    const response = await fetchPhotos(searchedValue, currentPage); // 1Запит до API, викликаємо ф-ію і передаємо в неї значення інпута та номер групи
     const data = response.data; // Отримуємо дані з відповіді
 
     // Перевірка наявності результатів
@@ -51,6 +55,7 @@ const onSearchFormSubmit = async event => {
       .join('');
     galleryEl.innerHTML = galleryCardsTemplate; // Вставляємо картки у галерею
     simpleLightbox.refresh(); // Оновлюємо SimpleLightbox
+    loadMoreBtnEl.classList.remove('is-hidden');
   } catch (err) {
     console.log(err);
     iziToast.error({
@@ -62,5 +67,22 @@ const onSearchFormSubmit = async event => {
   }
 };
 
+const onLoadMoreBtnClick = async event => {
+  try {
+    currentPage++;
+    const response = await fetchPhotos(searchedValue, currentPage);
+    console.log(response);
+    const data = response.data; // Витягуємо дані з відповіді
+    const galleryCardsTemplate = data.hits
+      .map(imgDetails => createGalleryCardTemplate(imgDetails))
+      .join('');
+    galleryEl.insertAdjacentHTML('beforeend', galleryCardsTemplate);
+    simpleLightbox.refresh();
+  } catch (err) {
+    console.log(err);
+  }
+};
 // Додаємо обробник події на форму
 searchFormEl.addEventListener('submit', onSearchFormSubmit);
+//Додаємо обробник події на кнопку
+loadMoreBtnEl.addEventListener('click', onLoadMoreBtnClick);
