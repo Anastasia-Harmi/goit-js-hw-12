@@ -1,3 +1,4 @@
+//
 import { createGalleryCardTemplate } from './js/render-functions';
 import { fetchPhotos } from './js/pixabay-api';
 import iziToast from 'izitoast';
@@ -13,11 +14,12 @@ const simpleLightbox = new SimpleLightbox('.js-gallery a', {
   overlayOpacity: 1,
 });
 
-const onSearchFormSubmit = event => {
-  event.preventDefault();
-  const searchedValue = searchFormEl.elements.user_query.value.trim();
+const onSearchFormSubmit = async event => {
+  event.preventDefault(); // Зупиняємо дію за замовчуванням
+  const searchedValue = searchFormEl.elements.user_query.value.trim(); // Зчитуємо значення пошукового запиту
+
+  // Якщо поле пусте, показуємо попередження
   if (searchedValue === '') {
-    // перевірка
     iziToast.warning({
       message: 'Please enter a search query.',
       position: 'bottomRight',
@@ -25,37 +27,40 @@ const onSearchFormSubmit = event => {
     return;
   }
 
-  loaderEl.classList.remove('is-hidden');
+  try {
+    loaderEl.classList.remove('is-hidden'); // Показуємо лоадер
+    const response = await fetchPhotos(searchedValue, 1); // Запит до API
+    const data = response.data; // Отримуємо дані з відповіді
 
-  fetchPhotos(searchedValue)
-    .then(data => {
-      loaderEl.classList.add('is-hidden'); // Вимкнення лоадера при отриманні результатів
-      if (!data.hits || data.hits.length === 0) {
-        iziToast.error({
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          position: 'bottomRight',
-        });
-        galleryEl.innerHTML = '';
-        searchFormEl.reset();
-
-        return;
-      }
-      const galleryCardsTemplate = data.hits
-        .map(imgDetails => createGalleryCardTemplate(imgDetails))
-        .join('');
-      galleryEl.innerHTML = galleryCardsTemplate;
-      simpleLightbox.refresh();
-      loaderEl.classList.add('is-hidden');
-    })
-    .catch(err => {
-      loaderEl.classList.add('is-hidden');
+    // Перевірка наявності результатів
+    if (!data.hits || data.hits.length === 0) {
       iziToast.error({
-        message: 'An error occurred. Please try again later.',
+        message:
+          'Sorry, there are no images matching your search query. Please try again!',
         position: 'bottomRight',
       });
-      console.log(err);
+      galleryEl.innerHTML = ''; // Очищаємо галерею
+      searchFormEl.reset(); // Очищаємо інпут
+      loaderEl.classList.add('is-hidden'); // Ховаємо лоадер
+      return;
+    }
+
+    // Створюємо шаблон карток зображень
+    const galleryCardsTemplate = data.hits
+      .map(imgDetails => createGalleryCardTemplate(imgDetails))
+      .join('');
+    galleryEl.innerHTML = galleryCardsTemplate; // Вставляємо картки у галерею
+    simpleLightbox.refresh(); // Оновлюємо SimpleLightbox
+  } catch (err) {
+    console.log(err);
+    iziToast.error({
+      message: 'An error occurred. Please try again later.',
+      position: 'bottomRight',
     });
+  } finally {
+    loaderEl.classList.add('is-hidden'); // Ховаємо лоадер
+  }
 };
 
+// Додаємо обробник події на форму
 searchFormEl.addEventListener('submit', onSearchFormSubmit);
