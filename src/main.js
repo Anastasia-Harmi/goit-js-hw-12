@@ -16,6 +16,7 @@ const simpleLightbox = new SimpleLightbox('.js-gallery a', {
 });
 let currentPage = 1; //номер групи при першому запиті
 let searchedValue = ''; // Зробили змінну глобальною, щоб використ у ф.кнопки завантажити ще
+let quantityElements = 0;
 
 const onSearchFormSubmit = async event => {
   event.preventDefault(); // Зупиняємо дію браузера за замовчуванням
@@ -71,13 +72,34 @@ const onLoadMoreBtnClick = async event => {
   try {
     currentPage++;
     const response = await fetchPhotos(searchedValue, currentPage);
-    console.log(response);
     const data = response.data; // Витягуємо дані з відповіді
+
     const galleryCardsTemplate = data.hits
       .map(imgDetails => createGalleryCardTemplate(imgDetails))
       .join('');
     galleryEl.insertAdjacentHTML('beforeend', galleryCardsTemplate);
     simpleLightbox.refresh();
+    // Цей блок коду перевіряє, чи кількість завантажених елементів quantityElements перевищує або дорівнює загальній кількості доступних результатів response.data.totalHits. Якщо це так, показується повідомлення за допомогою iziToast, що ви досягли кінця результатів пошуку. Також ховається кнопка завантаження ще (loadMoreBtnEl) та лоадер (loaderEl).
+    quantityElements += response.data.hits.length;
+    if (quantityElements >= response.data.totalHits) {
+      iziToast.show({
+        message: "We're sorry, but you've reached the end of search results.",
+        position: 'topRight',
+        backgroundColor: '#ef4040',
+        titleColor: '#fff',
+        titleSize: '16px',
+        titleLineHeight: '24px',
+        messageColor: '#fff',
+        messageSize: '16px',
+        messageLineHeight: '24px',
+        iconUrl: errorMessage,
+        maxWidth: '385px',
+        timeout: 5000,
+      });
+
+      loaderEl.classList.add('is-hidden');
+      loadMoreBtnEl.classList.add('is-hidden');
+    }
   } catch (err) {
     console.log(err);
   }
