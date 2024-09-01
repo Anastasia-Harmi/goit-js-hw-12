@@ -8,6 +8,7 @@ const searchFormEl = document.querySelector('.js-search-form');
 const galleryEl = document.querySelector('.js-gallery');
 const loaderEl = document.querySelector('.loader');
 const loadMoreBtnEl = document.querySelector('.loader-btn'); //шукаємо кнопку завантажити ще
+loadMoreBtnEl.insertAdjacentElement('afterend', loaderEl);
 const simpleLightbox = new SimpleLightbox('.js-gallery a', {
   captionDelay: 250,
   captionPosition: 'bottom',
@@ -15,7 +16,7 @@ const simpleLightbox = new SimpleLightbox('.js-gallery a', {
   overlayOpacity: 1,
 });
 let currentPage = 1; //номер групи при першому запиті, за замовчуванням
-let searchedValue = ''; // Зробили змінну глобальною,pf pfvjdx gecnbq hzljr щоб використ у ф.кнопки завантажити ще
+let searchedValue = ''; // Зробили змінну глобальною, щоб використ у ф.кнопки завантажити ще
 let quantityElements = 0;
 
 const onSearchFormSubmit = async event => {
@@ -32,7 +33,7 @@ const onSearchFormSubmit = async event => {
       });
       return;
     }
-
+    galleryEl.innerHTML = ''; // Очищаємо галерею перед новим пошуком
     loaderEl.classList.remove('is-hidden'); // Показуємо лоадер
     currentPage = 1;
     const response = await fetchPhotos(searchedValue, currentPage); // 1Запит до API, викликаємо ф-ію і передаємо в неї значення інпута та номер групи
@@ -58,6 +59,7 @@ const onSearchFormSubmit = async event => {
     galleryEl.innerHTML = galleryCardsTemplate; // Вставляємо картки у галерею
     simpleLightbox.refresh(); // Оновлюємо SimpleLightbox
     loadMoreBtnEl.classList.remove('is-hidden');
+    searchFormEl.reset(); // Очищаємо поле введення після успішного запиту
   } catch (err) {
     console.log(err);
     iziToast.error({
@@ -80,6 +82,15 @@ const onLoadMoreBtnClick = async event => {
       .join('');
     galleryEl.insertAdjacentHTML('beforeend', galleryCardsTemplate);
     simpleLightbox.refresh();
+    // Отримання висоти першої картки галереї
+    const { height: cardHeight } =
+      galleryEl.firstElementChild.getBoundingClientRect();
+
+    // Плавне прокручування сторінки на дві висоти картки
+    scrollBy({
+      top: cardHeight * 2,
+      behavior: 'smooth',
+    });
     // Цей блок коду перевіряє, чи кількість завантажених елементів quantityElements перевищує або дорівнює загальній кількості доступних результатів response.data.totalHits. Якщо це так, показується повідомлення за допомогою iziToast, що ви досягли кінця результатів пошуку. Також ховається кнопка завантаження ще (loadMoreBtnEl) та лоадер (loaderEl).
     quantityElements += response.data.hits.length;
     if (quantityElements >= response.data.totalHits) {
