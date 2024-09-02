@@ -101,7 +101,7 @@ const onLoadMoreBtnClick = async event => {
     // Цей блок коду перевіряє, чи кількість завантажених елементів quantityElements перевищує або дорівнює загальній кількості доступних результатів response.data.totalHits. Якщо це так, показується повідомлення за допомогою iziToast, що ви досягли кінця результатів пошуку. Також ховається кнопка завантаження ще (loadMoreBtnEl) та лоадер (loaderEl).
     quantityElements += response.data.hits.length;
 
-    if (quantityElements >= response.data.totalHits) {
+    if (Math.ceil(data.totalHits / 15) === currentPage) {
       iziToast.show({
         message: "We're sorry, but you've reached the end of search results.",
         position: 'topRight',
