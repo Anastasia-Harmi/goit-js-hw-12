@@ -106,14 +106,7 @@ const onLoadMoreBtnClick = async event => {
         message: "We're sorry, but you've reached the end of search results.",
         position: 'topRight',
         backgroundColor: '#ef4040',
-        titleColor: '#fff',
-        titleSize: '16px',
-        titleLineHeight: '24px',
         messageColor: '#fff',
-        messageSize: '16px',
-        messageLineHeight: '24px',
-        iconUrl: errorMessage,
-        maxWidth: '385px',
         timeout: 5000,
       });
 
