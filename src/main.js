@@ -49,6 +49,7 @@ const onSearchFormSubmit = async event => {
       galleryEl.innerHTML = ''; // Очищаємо галерею
       searchFormEl.reset(); // Очищаємо інпут
       loaderEl.classList.add('is-hidden'); // Ховаємо лоадер
+      loadMoreBtnEl.classList.add('is-hidden'); // Ховаємо кнопку, якщо результатів немає
       return;
     }
 
@@ -77,6 +78,10 @@ const onLoadMoreBtnClick = async event => {
     const response = await fetchPhotos(searchedValue, currentPage); // і робимо запит на сервер виклик ф fetchPhotos()
     const data = response.data; // Витягуємо дані з відповіді
 
+    if (!data.hits || data.hits.length === 0) {
+      loadMoreBtnEl.classList.add('is-hidden'); // Ховаємо кнопку, якщо результатів немає
+      return;
+    }
     const galleryCardsTemplate = data.hits
       .map(imgDetails => createGalleryCardTemplate(imgDetails))
       .join('');
