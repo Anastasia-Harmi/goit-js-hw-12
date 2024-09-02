@@ -34,6 +34,7 @@ const onSearchFormSubmit = async event => {
       return;
     }
     galleryEl.innerHTML = ''; // Очищаємо галерею перед новим пошуком
+    quantityElements = 0; // Скидаємо кількість елементів
     loaderEl.classList.remove('is-hidden'); // Показуємо лоадер
     currentPage = 1;
     const response = await fetchPhotos(searchedValue, currentPage); // 1Запит до API, викликаємо ф-ію і передаємо в неї значення інпута та номер групи
